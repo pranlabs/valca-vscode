@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - run: npm ci
+      - run: npm run compile
+
+  listing:
+    # The listing and the scanner are separate public surfaces that drift apart.
+    # In September 2026 the listing advertised 36 rules against a shipped 102.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install the published scanner
+        run: pip install valca --quiet
+
+      - name: Listing must match the shipped rule count
+        run: python3 scripts/check_listing.py
